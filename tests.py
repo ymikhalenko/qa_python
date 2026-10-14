@@ -1,57 +1,44 @@
-from queue import Empty
-
 import pytest
 from main import BooksCollector
+from constants import BOOK_1, BOOK_2, GENRE_1
 
 
 class TestBooksCollector:
 
-    @pytest.fixture()
-    def four_books_with_genres(self):
-        collector = BooksCollector()
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
-        collector.add_new_book('Ужас 2')
-        collector.add_new_book('Комедия 2')
-        collector.set_book_genre('Гордость и предубеждение и зомби', 'Ужасы')
-        collector.set_book_genre('Что делать, если ваш кот хочет вас убить', 'Комедии')
-        collector.set_book_genre('Ужас 2', 'Ужасы')
-        collector.set_book_genre('Комедия 2', 'Комедии')
-        return collector
-
-    @pytest.fixture()
-    def four_books_with_genres_and_two_favorite_books(self, four_books_with_genres):
-        four_books_with_genres.add_book_in_favorites('Что делать, если ваш кот хочет вас убить')
-        four_books_with_genres.add_book_in_favorites('Гордость и предубеждение и зомби')
-        return four_books_with_genres
-
-    def test_add_new_book_new_books_doesnt_have_genre(self, four_books_with_genres):
-        four_books_with_genres.add_new_book('Библия')
-        assert not four_books_with_genres.books_genre.get('Библия')
+    def test_add_new_book_new_books_doesnt_have_genre(self, collector):
+        collector.add_new_book(BOOK_1)
+        assert not collector.books_genre.get(BOOK_1)
     
-    def test_add_new_book_add_four_books(self, four_books_with_genres):
-        assert len(four_books_with_genres.get_books_genre()) == 4
+    def test_add_new_book_add_one_book(self, collector):
+        collector.add_new_book(BOOK_1)
+        assert len(collector.get_books_genre()) == 1
 
-    def test_set_book_genre_add_four_books_with_genres(self, four_books_with_genres):
-        for book in four_books_with_genres.books_genre:
-            assert four_books_with_genres.books_genre[book]
+    def test_set_book_genre_add_one_book_with_genre(self, one_book):
+        one_book.set_book_genre(BOOK_1, GENRE_1)
+        assert one_book.books_genre[BOOK_1] == GENRE_1
 
-    def test_get_book_genre_comedy_book_returns_comedy_genre(self, four_books_with_genres):
-            assert four_books_with_genres.get_book_genre('Что делать, если ваш кот хочет вас убить') == 'Комедии'
+    def test_get_book_genre_horror_book_returns_genre(self, one_book_with_genre):
+        assert one_book_with_genre.get_book_genre(BOOK_1) == GENRE_1
 
-    def test_get_books_with_specific_genre_comdey_genre_returns_two_books(self, four_books_with_genres):
-        assert len(four_books_with_genres.get_books_with_specific_genre('Комедии')) == 2
+    def test_get_books_with_specific_genre_horror_genre_returns_book(self, one_book_with_genre):
+        assert one_book_with_genre.get_books_with_specific_genre(GENRE_1) == [BOOK_1]
 
-    def test_get_books_for_children_returns_two_books(self, four_books_with_genres):
-            assert len(four_books_with_genres.get_books_for_children()) == 2
+    def test_get_books_genre_returns_book(self, one_book):
+            assert len(one_book.get_books_genre()) == 1
 
-    def test_get_books_for_children_doesnt_return_horror(self, four_books_with_genres):
-            assert 'Гордость и предубеждение и зомби' not in four_books_with_genres.get_books_for_children()
+    def test_get_books_for_children_two_books_with_genres_returns_one_book(self, two_books_with_genres):
+        assert two_books_with_genres.get_books_for_children() == [BOOK_2]
 
-    def test_add_book_in_favorites_add_two_books(self, four_books_with_genres_and_two_favorite_books):
-        assert len(four_books_with_genres_and_two_favorite_books.get_list_of_favorites_books()) == 2
+    def test_get_books_for_children_doesnt_return_horror(self, two_books_with_genres):
+        assert BOOK_1 not in two_books_with_genres.get_books_for_children()
 
-    def test_delete_book_from_favorites_delete_two_books(self, four_books_with_genres_and_two_favorite_books):
-        four_books_with_genres_and_two_favorite_books.delete_book_from_favorites('Что делать, если ваш кот хочет вас убить')
-        four_books_with_genres_and_two_favorite_books.delete_book_from_favorites('Гордость и предубеждение и зомби')
-        assert not four_books_with_genres_and_two_favorite_books.get_list_of_favorites_books()
+    def test_add_book_in_favorites_add_book(self, one_book_with_genre):
+        one_book_with_genre.add_book_in_favorites(BOOK_1)
+        assert one_book_with_genre.get_list_of_favorites_books() == [BOOK_1]
+
+    def test_delete_book_from_favorites_delete_book(self, one_book_with_favorite):
+        one_book_with_favorite.delete_book_from_favorites(BOOK_1)
+        assert not one_book_with_favorite.get_list_of_favorites_books()
+
+    def test_get_list_of_favorites_books_returns_book(self, one_book_with_favorite):
+        assert len(one_book_with_favorite.get_list_of_favorites_books()) == 1
